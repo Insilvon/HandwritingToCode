@@ -22,6 +22,7 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.awt.event.ActionEvent;
 import java.awt.FlowLayout;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -32,6 +33,8 @@ public class ocrGUI extends JFrame {
      * Launch the application.
      */
     public static void main(String[] args) {
+        OCRCompiler.compile();
+        System.exit(0);
         System.out.println(System.getProperty("user.dir"));
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -167,12 +170,34 @@ class OCRCompiler {
             runProcess(processBuilder);
         }
         if (os.equals("windows")) {
+            //Run the python script and generate OCR.py
             ProcessBuilder processBuilder = new ProcessBuilder(path+"\\winOCR.bat");
             runProcess(processBuilder);
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //Read through it, print it out
+            File createdText = new File("OCR.txt");
+            try {
+                Scanner reader = new Scanner(createdText);
+                while(reader.hasNextLine()){
+                    String line = reader.nextLine();
+                    System.out.println(line);
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            //compile and run result
+            ProcessBuilder temp = new ProcessBuilder(path+"\\winCompile.bat");
+            runProcess(temp);
             //Do any editing on the text file here
-            processBuilder = new ProcessBuilder(path+"\\winCompile.bat");
-            runProcess(processBuilder);
+//            processBuilder = new ProcessBuilder(path+"\\winCompile.bat");
+//            runProcess(processBuilder);
         }
+
+
     }
 
     /**
@@ -195,7 +220,7 @@ class OCRCompiler {
             int exitVal = process.waitFor();
             if (exitVal == 0) {
                 System.out.println(output);
-                System.exit(0);
+                //System.exit(0);
             } else {
                 //uh
             }
@@ -215,8 +240,6 @@ class OCRCompiler {
     private static void generateBatch(String osName){
         String path = System.getProperty("user.dir");
         FileWriter out;
-        String command1 = "export GOOGLE_APPLICATION_CREDENTIALS=ocr-9301078d40b9.json first on command line";
-        String command2;
         File osOCR = null;
         File osCompiler = null;
 
@@ -225,7 +248,7 @@ class OCRCompiler {
             osCompiler = new File(path+"/linuxCompile.sh");
             try {
                 out = new FileWriter(osOCR);
-                out.write(command1 + "\n");
+                out.write("export GOOGLE_APPLICATION_CREDENTIALS=ocr-9301078d40b9.json first on command line \n");
                 out.write( "python3 ocr.py OCR.jpg");
                 out.close();
             } catch (IOException e) {
@@ -235,7 +258,7 @@ class OCRCompiler {
                 out = new FileWriter(osCompiler);
                 out.write("cd " + path + "\n");
                 out.write("mv OCR.txt OCR.java\n");
-                out.write("javac OCR.java\n");
+                out.write("javac -target 1.8 -source 1.8 OCR.java\n");
                 out.write("java OCR");
                 out.close();
             } catch (IOException e) {
@@ -247,8 +270,8 @@ class OCRCompiler {
             osCompiler = new File(path+"/winCompile.bat");
             try {
                 out = new FileWriter(osOCR);
-                out.write(command1 + "\n");
-                out.write( "python ocr.py OCR.jpg");
+                out.write("set GOOGLE_APPLICATION_CREDENTIALS=ocr-9301078d40b9.json" + "\n");
+                out.write( "python "+path+"\\ocr.py OCR.jpg");
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -257,7 +280,7 @@ class OCRCompiler {
                 out = new FileWriter(osCompiler);
                 out.write("cd " + path + "\n");
                 out.write("move OCR.txt OCR.java\n");
-                out.write("javac OCR.java\n");
+                out.write("javac -target 1.8 -source 1.8 OCR.java\n");
                 out.write("java OCR");
                 out.close();
             } catch (IOException e) {
