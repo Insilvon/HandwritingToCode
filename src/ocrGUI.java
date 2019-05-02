@@ -247,7 +247,7 @@ public class ocrGUI extends JFrame {
             osCompiler = new File(path+"/linuxCompile.sh");
             try {
                 out = new FileWriter(osOCR);
-                out.write("export GOOGLE_APPLICATION_CREDENTIALS=ocr-9301078d40b9.json first on command line \n");
+                out.write("export GOOGLE_APPLICATION_CREDENTIALS=YOURCREDENTIALSHERE.json first on command line \n");
                 out.write( "python3 ocr.py OCR.jpg");
                 out.close();
             } catch (IOException e) {
