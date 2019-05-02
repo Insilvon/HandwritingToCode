@@ -26,15 +26,18 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+/**
+ * Core class which will create the GUI and all of its elements.
+ */
 public class ocrGUI extends JFrame {
     private JPanel contentPane;
-    public JPanel panel_2;
-    Scanner scan;
+    static String consoleOutput = "";
+    static JPanel panel_2;
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
-        //OCRCompiler.compile();
+        //compile();
         //System.exit(0);
         System.out.println(System.getProperty("user.dir"));
         EventQueue.invokeLater(new Runnable() {
@@ -42,6 +45,9 @@ public class ocrGUI extends JFrame {
                 try {
                     ocrGUI frame = new ocrGUI();
                     frame.setVisible(true);
+                    consoleOutput = compile();
+                    JTextArea textArea = new JTextArea(consoleOutput);
+                    panel_2.add(textArea);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -66,9 +72,6 @@ public class ocrGUI extends JFrame {
 
         JButton btnNewButton = new JButton("Capture");
 
-
-        String consoleOutput = "";
-
         btnNewButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 //Webcam webcam = Webcam.getWebcamByName("Microsoft Camera Front 1");
@@ -77,7 +80,9 @@ public class ocrGUI extends JFrame {
                 try {
                     ImageIO.write(webcam.getImage(),"JPG", new File("OCR.jpg"));
                     System.out.println("Image Captured!");
-                    OCRCompiler.compile();
+                    consoleOutput = compile();
+                    JTextArea textArea = new JTextArea(consoleOutput);
+                    panel_2.add(textArea);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -126,20 +131,14 @@ public class ocrGUI extends JFrame {
 //        while (inFile.hasNextLine())
 //            ocrOut.add(inFile.next());
 //        for (String line : ocrOut) {
-//
-            JTextArea textArea = new JTextArea(consoleOutput);
+            System.out.println("WOAHHHHHHHHHHHHHHHHHHHHHHHH");
+            System.out.println(consoleOutput);
+            JTextArea textArea = new JTextArea("HELLO WORLD");
             panel_2.add(textArea);
 //        }
 //
 //        inFile.close();
     }
-
-}
-
-/**
- * Core class which will actually run the various scripts needed to compile a text file, java file, and class file.
- */
-class OCRCompiler {
     public static String compile() {
         System.out.println("BEGINNING COMPILING PROCESS");
 
@@ -194,13 +193,12 @@ class OCRCompiler {
             //Do any editing on the text file here
 //            processBuilder = new ProcessBuilder(path+"\\winCompile.bat");
 //            runProcess(processBuilder);
-            System.out.println(outputData);
+            //System.out.println(outputData);
             return outputData;
         }
         return "";
 
     }
-
     /**
      * Private process which waits for an active terminal/console and will log all data
      * to this console.
@@ -232,7 +230,6 @@ class OCRCompiler {
         }
         return "";
     }
-
     /**
      * Private method which will identify the user's operating system and generate two shell/batch files appropriately.
      * The first is osOCR.bat/sh, which will run the OCR.py script.
@@ -291,7 +288,6 @@ class OCRCompiler {
         }
 
     }
-
 }
 class OSCheck {
     private static String OS = System.getProperty("os.name").toLowerCase();
