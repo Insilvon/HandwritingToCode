@@ -28,13 +28,14 @@ import javax.swing.JTextArea;
 
 public class ocrGUI extends JFrame {
     private JPanel contentPane;
+    public JPanel panel_2;
     Scanner scan;
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
-        OCRCompiler.compile();
-        System.exit(0);
+        //OCRCompiler.compile();
+        //System.exit(0);
         System.out.println(System.getProperty("user.dir"));
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -64,6 +65,10 @@ public class ocrGUI extends JFrame {
         contentPane.add(splitPane, BorderLayout.SOUTH);
 
         JButton btnNewButton = new JButton("Capture");
+
+
+        String consoleOutput = "";
+
         btnNewButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 //Webcam webcam = Webcam.getWebcamByName("Microsoft Camera Front 1");
@@ -107,7 +112,7 @@ public class ocrGUI extends JFrame {
         panel_1 = panel;
         splitPane_1.setLeftComponent(panel_1);
 
-        JPanel panel_2 = new JPanel();
+        panel_2 = new JPanel();
         splitPane_1.setRightComponent(panel_2);
 
         JScrollPane scrollPane = new JScrollPane();
@@ -122,8 +127,8 @@ public class ocrGUI extends JFrame {
 //            ocrOut.add(inFile.next());
 //        for (String line : ocrOut) {
 //
-//            JTextArea textArea = new JTextArea(line);
-//            panel_2.add(textArea);
+            JTextArea textArea = new JTextArea(consoleOutput);
+            panel_2.add(textArea);
 //        }
 //
 //        inFile.close();
@@ -135,7 +140,7 @@ public class ocrGUI extends JFrame {
  * Core class which will actually run the various scripts needed to compile a text file, java file, and class file.
  */
 class OCRCompiler {
-    public static void compile() {
+    public static String compile() {
         System.out.println("BEGINNING COMPILING PROCESS");
 
         //Get the OS type
@@ -144,11 +149,7 @@ class OCRCompiler {
         generateBatch(os);
         //Get the current paths of all the files we will need.
         String path = System.getProperty("user.dir");
-        String imagePath = path+"\\OCR.png";
-        String txtPath = path+"\\collectedText.txt";
-        File file = new File("collectedText.txt");
-        String ocrPath = path+"\\ocr.py";
-
+        String outputData = "";
         if (os.equals("linux")) {
             Scanner in = new Scanner(System.in);
             System.out.println("Please enter your linux password, if applicable.");
@@ -164,21 +165,18 @@ class OCRCompiler {
                 e.printStackTrace();
             }
             ProcessBuilder processBuilder = new ProcessBuilder(path+"/linuxOCR.sh");
-            runProcess(processBuilder);
+            outputData+=runProcess(processBuilder)+"\n\n\n";
             //Do any editing on the text file here
             processBuilder = new ProcessBuilder(path+"/linuxCompile.sh");
-            runProcess(processBuilder);
+            outputData+=runProcess(processBuilder);
+            System.out.println(outputData);
+            return outputData;
         }
         if (os.equals("windows")) {
             //Run the python script and generate OCR.py
             ProcessBuilder processBuilder = new ProcessBuilder(path+"\\winOCR.bat");
-            runProcess(processBuilder);
-            try {
-                TimeUnit.SECONDS.sleep(2);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //Read through it, print it out
+            outputData+=runProcess(processBuilder);
+
             File createdText = new File("OCR.txt");
             try {
                 Scanner reader = new Scanner(createdText);
@@ -191,12 +189,15 @@ class OCRCompiler {
             }
             //compile and run result
             ProcessBuilder temp = new ProcessBuilder(path+"\\winCompile.bat");
-            runProcess(temp);
+            outputData+=runProcess(temp);
+
             //Do any editing on the text file here
 //            processBuilder = new ProcessBuilder(path+"\\winCompile.bat");
 //            runProcess(processBuilder);
+            System.out.println(outputData);
+            return outputData;
         }
-
+        return "";
 
     }
 
@@ -205,7 +206,7 @@ class OCRCompiler {
      * to this console.
      * @param processBuilder
      */
-    private static void runProcess(ProcessBuilder processBuilder) {
+    private static String runProcess(ProcessBuilder processBuilder) {
         try {
             //Begin the process
             Process process = processBuilder.start();
@@ -219,7 +220,7 @@ class OCRCompiler {
             //Wait for the console to end, then end this program
             int exitVal = process.waitFor();
             if (exitVal == 0) {
-                System.out.println(output);
+                return output.toString();
                 //System.exit(0);
             } else {
                 //uh
@@ -229,6 +230,7 @@ class OCRCompiler {
         } catch (InterruptedException e){
             e.printStackTrace();
         }
+        return "";
     }
 
     /**
